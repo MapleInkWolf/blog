@@ -306,6 +306,245 @@ main > .pages {
   opacity: 0.85;
 }
 
+/* ---------- 4b. 首屏画框：插画、扫描线、角标 ---------- */
+.hero .ef-frame .window {
+  background: var(--ef-panel); /* 浅色时与插画白底无缝，深色时变成深色卡纸 */
+}
+
+.hero .ef-frame .shot {
+  display: block;
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  object-position: 50% 100%;
+  transition: transform 0.6s var(--ef-mech);
+}
+
+.hero .ef-frame:hover .shot,
+.hero .ef-frame:focus-within .shot {
+  transform: scale(1.03);
+}
+
+html[data-theme='dark'] .hero .ef-frame .shot {
+  filter: brightness(0.86) contrast(1.04);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero .ef-frame .shot {
+    animation: shot-in 900ms var(--ef-mech) 120ms both;
+  }
+}
+
+@keyframes shot-in {
+  from {
+    clip-path: inset(0 100% 0 0);
+  }
+  to {
+    clip-path: inset(0 0 0 0);
+  }
+}
+
+/* 扫描线：加载时扫一次，鼠标移到画框上再扫一次 */
+.frame-scan {
+  position: absolute;
+  left: 0;
+  right: 0;
+  top: 0;
+  height: 2px;
+  opacity: 0;
+  pointer-events: none;
+  background: linear-gradient(90deg, transparent, var(--ef-trace), transparent);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .hero .ef-frame .frame-scan {
+    animation: scan 1100ms var(--ef-mech) 300ms both;
+  }
+
+  .hero .ef-frame:hover .frame-scan,
+  .hero .ef-frame:focus-within .frame-scan {
+    animation: scan 700ms var(--ef-mech) both;
+  }
+}
+
+@keyframes scan {
+  0% {
+    top: 0;
+    opacity: 0;
+  }
+  12% {
+    opacity: 0.75;
+  }
+  100% {
+    top: 100%;
+    opacity: 0;
+  }
+}
+
+/* 角标：ARCHIVE / 01，乱码落定后黄条长满 */
+.frame-hud {
+  position: absolute;
+  top: 0;
+  left: calc(3.25rem * var(--ef-cut-k));
+  display: inline-flex;
+  flex-direction: column;
+  gap: 0.4rem;
+  padding: 0.5rem 1rem 0.55rem 0.65rem;
+  background: var(--ef-paper);
+  border-right: 1px solid var(--ef-ink);
+  border-bottom: 1px solid var(--ef-ink);
+}
+
+.hud-code {
+  font-family: var(--ef-font-ui);
+  font-size: 0.6875rem;
+  font-weight: 600;
+  letter-spacing: 0.16em;
+  text-transform: uppercase;
+  font-variant-numeric: tabular-nums;
+  color: var(--ef-ink);
+}
+
+.hud-bar {
+  display: block;
+  width: 0;
+  height: 2px;
+  background: var(--ef-trace);
+  transition: width 0.4s var(--ef-mech);
+}
+
+.hud-bar.is-full {
+  width: 100%;
+}
+
+/* ---------- 4c. 歌单 ---------- */
+.pl {
+  padding: clamp(2rem, 4vw, 3rem) var(--ef-pad);
+  border-top: 1px solid var(--ef-rule);
+}
+
+.pl-top {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.pl-name {
+  margin: 0.3rem 0 0.4rem;
+  font-family: var(--ef-font-text);
+  font-size: clamp(1.35rem, 2.8vw, 1.9rem);
+  font-weight: 700;
+  line-height: 1.2;
+}
+
+.pl-meta > *:not(:last-child)::after {
+  content: '/';
+  margin-inline: 0.6em;
+  color: var(--ef-rule);
+}
+
+.pl-slot {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.85rem 1.5rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid var(--ef-rule);
+  background: var(--ef-panel);
+  margin-bottom: 1.25rem;
+}
+
+.pl-now {
+  min-width: 13rem;
+  flex: 1 1 auto;
+}
+
+.pl-now p {
+  margin: 0;
+}
+
+.pl-now .ef-field {
+  color: var(--ef-ink-2);
+}
+
+.pl-now-title {
+  margin-top: 0.25rem !important;
+  font-family: var(--ef-font-text);
+  font-size: 1rem;
+  font-weight: 700;
+}
+
+.pl-frame {
+  display: block;
+  width: 100%;
+  max-width: 420px;
+  height: 66px;
+  border: 0;
+  background: transparent;
+}
+
+.pl-list .pl-row {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto auto;
+  width: 100%;
+  margin: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.pl-row:is(:hover, :focus-visible) {
+  background: var(--ef-paper);
+}
+
+.pl-row:is(:hover, :focus-visible)::before {
+  transform: none;
+}
+
+.pl-row:is(:hover, :focus-visible) > * {
+  transform: translateX(6px);
+}
+
+.pl-row.is-playing .ef-tag {
+  background: var(--ef-signal);
+  color: var(--ef-on-signal);
+  font-weight: 700;
+}
+
+.pl-row.is-playing .name {
+  font-weight: 700;
+}
+
+.pl-artist {
+  color: var(--ef-ink-2);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+.pl-note {
+  margin-top: 1.25rem;
+}
+
+@media (max-width: 719px) {
+  .pl-list .pl-row {
+    grid-template-columns: auto minmax(0, 1fr) auto;
+    row-gap: 0.2rem;
+  }
+
+  .pl-artist {
+    grid-column: 1 / -1;
+    grid-row: 3;
+    white-space: normal;
+  }
+}
+
 /* ---------- 5. 阅读页 ---------- */
 .pages {
   max-width: 70rem;

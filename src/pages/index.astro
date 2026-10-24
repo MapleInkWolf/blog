@@ -1,5 +1,6 @@
 ---
 import Base from '../layouts/Base.astro';
+import Player from '../components/Player.astro';
 import { SITE } from '../site.config';
 import { withBase } from '../lib/url';
 import {
@@ -55,49 +56,18 @@ const index = posts.slice(0, SITE.indexCount);
 
     <figure class="ef-frame">
       <div class="window">
-        <svg
-          viewBox="0 0 400 420"
-          fill="none"
-          stroke="currentColor"
-          stroke-width="1.5"
-          stroke-linejoin="round"
-          role="img"
-          aria-label="等轴测线稿：一摞叠起来的档案板"
-        >
-          <!-- 底层 -->
-          <g transform="translate(200 190)">
-            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
-            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
-            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
-          </g>
-          <!-- 中层 -->
-          <g transform="translate(200 166)">
-            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
-            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
-            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
-          </g>
-          <!-- 顶层 -->
-          <g transform="translate(200 142)">
-            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
-            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
-            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
-            <!-- 顶面的两道页边 -->
-            <path d="M-48 24 L12 -6" opacity=".6" />
-            <path d="M-24 12 L36 -18" opacity=".6" />
-            <!-- 左侧面的标签块 -->
-            <path d="M-105 12 L-65 32 L-65 40 L-105 20 Z" opacity=".8" />
-          </g>
-          <text
-            x="26"
-            y="42"
-            font-family="Saira, sans-serif"
-            font-stretch="125%"
-            font-size="11"
-            letter-spacing="2"
-            fill="currentColor"
-            stroke="none">ARCHIVE / 01</text
-          >
-        </svg>
+        <img
+          class="shot"
+          src={withBase('/images/eku.jpg')}
+          alt="插画：抱着甜甜圈的 EKU"
+          width="1200"
+          height="1000"
+        />
+        <span class="frame-scan" aria-hidden="true"></span>
+        <span class="frame-hud" aria-hidden="true">
+          <span class="hud-code" data-decode="ARCHIVE / 01">ARCHIVE / 01</span>
+          <span class="hud-bar"></span>
+        </span>
       </div>
       <figcaption class="ef-plate">技术、阅读与直播间的档案。</figcaption>
     </figure>
@@ -163,6 +133,8 @@ const index = posts.slice(0, SITE.indexCount);
     </p>
   </section>
 
+  <Player />
+
   <section class="channels" aria-label="B站">
     <p class="ef-eyebrow slash" style="grid-column: 1 / -1; margin: 0 0 -0.25rem">
       Channels / 频道
@@ -178,4 +150,60 @@ const index = posts.slice(0, SITE.indexCount);
       <span class="ef-field">live.bilibili.com/2132018</span>
     </a>
   </section>
+  <script is:inline>
+    // 右上角 ARCHIVE / 01：乱码滚动后落定，然后色条长满
+    (() => {
+      var code = document.querySelector('[data-decode]');
+      if (!code) return;
+      var bar = document.querySelector('.hud-bar');
+      var target = code.getAttribute('data-decode') || '';
+      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+
+      function settle() {
+        code.textContent = target;
+        code.classList.add('is-done');
+        if (bar) bar.classList.add('is-full');
+      }
+
+      if (reduce || !target) {
+        settle();
+        return;
+      }
+
+      var glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#/+=';
+      var total = 26;
+
+      function scramble(str) {
+        var out = '';
+        for (var i = 0; i < str.length; i++) {
+          var ch = str.charAt(i);
+          out += ch === ' ' ? ' ' : glyphs.charAt(Math.floor(Math.random() * glyphs.length));
+        }
+        return out;
+      }
+
+      // 先铺一层乱码，等首屏画出来再落定——不然动效在图片加载前就跑完了
+      code.textContent = scramble(target);
+      setTimeout(function () {
+        var frame = 0;
+        var timer = setInterval(function () {
+          frame++;
+          var done = Math.floor((frame / total) * target.length);
+          var out = target.slice(0, done);
+          for (var i = done; i < target.length; i++) {
+            var ch = target.charAt(i);
+            out +=
+              ch === ' '
+                ? ' '
+                : glyphs.charAt(Math.floor(Math.random() * glyphs.length));
+          }
+          code.textContent = out;
+          if (frame >= total) {
+            clearInterval(timer);
+            settle();
+          }
+        }, 24);
+      }, 320);
+    })();
+  </script>
 </Base>

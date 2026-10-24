@@ -9,6 +9,7 @@
 - 首页是「展示」版式：超大字标、空心大编号、墨色滚动条、切角画框
 - 文章页是「阅读」版式：白纸阅读栏 + 页边的目录和真实统计
 - 浅色 / 深色两套完整主题，右上角可切换并记住选择
+- 首页挂着一个网易云歌单播放器，点一行就换歌
 - 自动生成 RSS（`/rss.xml`）和分享用的 `<meta>`
 - 文章编号（No.001）、字数、阅读时长都是构建时算出来的真实数据
 
@@ -32,11 +33,30 @@ npm run preview  # 预览构建结果
 | 全部颜色、字体、间距、切角 | `public/endfield.css` 开头的 `--ef-*` 变量 |
 | 页面版式（首屏栅格、页脚、频道卡片） | `public/site.css` |
 | 网站图标 | `public/favicon.svg` |
-| 首屏那张线稿 | `src/pages/index.astro` 里的内联 `<svg>` |
+| 首屏插画 | 换掉 `public/images/eku.jpg`，或改 `src/pages/index.astro` 里 `<img class="shot">` 的 src |
+| 首页歌单 | `src/data/playlist.ts`（曲目、时长都在这） |
 | 关于页正文 | `src/pages/about.astro` |
 | 示例文章 | `src/content/posts/*.md`（可以直接删） |
 
 **B站链接**写在 `src/site.config.ts` 的 `bilibili` 里，改一处，导航、首屏「频道」区、页脚、关于页会一起变。
+
+## 音乐播放器
+
+首页的「// PLAYLIST」区是整张歌单：上面是网易云官方的外链播放器，下面是曲目列表。
+
+- 点任意一行 → 把 iframe 的 `src` 换成那首歌的 `id` 并且 `auto=1`，同时把这行的编号点亮
+- 播放、暂停、进度都在那个 66px 的官方播放器里，不需要自己实现音频
+- 曲目数据在 `src/data/playlist.ts`，是写死的：构建时不去请求网易云接口（Actions 的机器在海外，容易超时）
+- 换歌单就改这个文件：`id`、`name`、`url`，再按 `https://music.163.com/api/v3/song/detail` 把每首的 `id` 和 `duration`（毫秒）抄进来
+
+会员或需要登录的曲目，播放器里会给出提示，这是网易云那边的限制。
+
+## 首屏插画与角标动效
+
+- 插画放 `public/images/eku.jpg`，在画框里用 `object-fit: contain` 铺开；深色主题下会自动压暗一点
+- 左上角的 `ARCHIVE / 01` 是一个角标：加载时先铺一层乱码，等首屏画出来再从乱码滚到正常文字，下面的色条同时长满
+- 鼠标移到画框上：图片轻微放大，一条扫描线从上往下扫过
+- 以上动效都写在 `public/site.css`（`shot-in` / `scan` / `.frame-hud`）和 `src/pages/index.astro` 末尾的内联脚本里，系统开启「减少动态效果」时全部关闭
 
 ## 写一篇新文章
 
