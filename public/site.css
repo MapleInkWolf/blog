@@ -549,6 +549,10 @@ html[data-theme='dark'] .hero .ef-frame .shot {
   margin: 0 0 1.25rem;
 }
 
+.pl-notice a {
+  border-bottom: 1px solid currentColor;
+}
+
 @media (max-width: 719px) {
   .pl-list .pl-row {
     grid-template-columns: auto minmax(0, 1fr) auto;

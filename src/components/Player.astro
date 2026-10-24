@@ -38,7 +38,8 @@ const playerSrc = (id: string, auto: 0 | 1) =>
   </div>
 
   <p class="ef-notice pl-notice" id="pl-notice" data-flag="会员" hidden>
-    这首要开网易云会员才能放。可以在右边的播放器里登录会员账号，或者点「整张歌单」用客户端听。
+    这首要开网易云会员才能放。可以在右边的播放器里登录会员账号，或者
+    <a id="pl-open" href={PLAYLIST.url} target="_blank" rel="noopener">在网易云打开这首</a>。
   </p>
 
   <div class="pl-filters" role="group" aria-label="筛选曲目">
@@ -118,6 +119,11 @@ const playerSrc = (id: string, auto: 0 | 1) =>
 
         if (now) now.textContent = 'No.' + no + ' · ' + title;
         if (notice) notice.hidden = !vip;
+
+        var open = document.getElementById('pl-open');
+        if (open) {
+          open.href = 'https://music.163.com/song?id=' + encodeURIComponent(id);
+        }
       });
     });
 
