@@ -1,44 +1,94 @@
 ---
 import Base from '../../layouts/Base.astro';
-import { getCollection } from 'astro:content';
 import { withBase } from '../../lib/url';
-import { formatDate, isoDate, readingTime } from '../../lib/format';
+import {
+  getEntries,
+  groupByYear,
+  formatDate,
+  isoDate,
+  num,
+  tagCounts,
+  readingMinutes,
+} from '../../lib/posts';
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
-
-// 按年份分组，方便一眼看出写作节奏
-const byYear = posts.reduce<Record<string, typeof posts>>((acc, post) => {
-  const year = String(post.data.date.getFullYear());
-  (acc[year] ??= []).push(post);
-  return acc;
-}, {});
-const years = Object.keys(byYear).sort((a, b) => Number(b) - Number(a));
+const entries = await getEntries();
+const groups = groupByYear(entries);
+const totalWords = entries.reduce((sum, e) => sum + e.words, 0);
+const tags = tagCounts(entries);
 ---
 
-<Base title="文章" description={`${posts.length} 篇文章的归档。`}>
-  <h1 class="page-title">文章</h1>
+<Base title="文章" description={`全部 ${entries.length} 篇文章，按年份归档。`}>
+  <div class="pages">
+    <article class="ef-spread">
+      <div class="ef-sheet">
+        <header class="ef-sheet-head">
+          <h1 class="ef-read">文章</h1>
+          <p class="ef-field">共 {entries.length} 篇</p>
+        </header>
 
-  {years.map((year) => (
-    <section>
-      <h2 class="year-heading">{year}</h2>
-      <ul class="post-list">
-        {byYear[year].map((post) => (
-          <li>
-            <a class="post-item" href={withBase(`/posts/${post.id}/`)}>
-              <span class="post-item__title">{post.data.title}</span>
-              <span class="post-item__meta">
-                <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
-                <span>{readingTime(post.body ?? '')}</span>
-                {post.data.tags.map((tag) => <span class="tag">{tag}</span>)}
-              </span>
-            </a>
-          </li>
+        <p class="ef-lede ef-read">
+          按发布时间编号，最早的一篇是 No.001。每行右边是正文的实际字数。
+        </p>
+
+        {groups.map((group) => (
+          <>
+            <h2 class="ef-group-head ef-read">
+              <span>{group.year}</span>
+              <span class="ef-field">{group.items.length} 篇</span>
+            </h2>
+            <ol class="ef-records">
+              {group.items.map((entry, i) => (
+                <li>
+                  <a
+                    class="ef-record ef-in-come"
+                    style={`--i: ${i}`}
+                    href={withBase(`/posts/${entry.post.id}/`)}
+                  >
+                    <span class="ef-tag">No.{entry.no}</span>
+                    <time class="ef-field" datetime={isoDate(entry.post.data.date)}>
+                      {formatDate(entry.post.data.date)}
+                    </time>
+                    <span class="name ef-read">{entry.post.data.title}</span>
+                    <span class="ef-field">{num(entry.words)} 字</span>
+                  </a>
+                </li>
+              ))}
+            </ol>
+          </>
         ))}
-      </ul>
-    </section>
-  ))}
 
-  {posts.length === 0 && <p>还没有文章。</p>}
+        {entries.length === 0 && (
+          <p class="ef-empty">
+            还没有文章。在 src/content/posts 里新建一个 Markdown 文件，推上去就会出现在这里。
+          </p>
+        )}
+      </div>
+
+      <aside class="ef-margin" aria-label="统计与标签">
+        <h2 class="margin-h">统计</h2>
+        <ul class="ef-ledger">
+          <li><span>文章</span><span class="ef-field">{entries.length} 篇</span></li>
+          <li><span>字数合计</span><span class="ef-field">{num(totalWords)} 字</span></li>
+          <li>
+            <span>平均每篇</span>
+            <span class="ef-field">{num(Math.round(totalWords / Math.max(1, entries.length)))} 字</span>
+          </li>
+          <li>
+            <span>阅读时长</span>
+            <span class="ef-field">约 {readingMinutes(totalWords)} 分钟</span>
+          </li>
+        </ul>
+
+        <h2 class="margin-h">标签</h2>
+        <ul class="ef-ledger">
+          {tags.map((t) => (
+            <li>
+              <span>{t.tag}</span>
+              <span class="ef-field">{t.count} 篇</span>
+            </li>
+          ))}
+        </ul>
+      </aside>
+    </article>
+  </div>
 </Base>

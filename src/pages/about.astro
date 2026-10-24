@@ -5,40 +5,82 @@ import { withBase } from '../lib/url';
 ---
 
 <Base title="关于" description={`关于 ${SITE.author}`}>
-  <h1 class="page-title">关于</h1>
+  <div class="pages">
+    <article class="ef-spread">
+      <div class="ef-sheet">
+        <p class="ef-eyebrow slash">About</p>
+        <h1 class="post-title">关于</h1>
+        <div class="ef-tri" aria-hidden="true"><i></i><i></i><i></i></div>
 
-  <div class="prose">
-    <p>你好，我是 {SITE.author}。这里是我的博客。</p>
+        <div class="ef-prose">
+          <p>
+            你好，我是 {SITE.author}。这里是我的博客，也是我自己的档案柜：
+            技术上的折腾、读过的书、直播时聊到的零散想法，都往这里放。
+          </p>
 
-    <p>
-      我平时写代码，也读一些闲书。这个站点用来放那些值得写下来、但发在社交平台又太长的东西：
-      技术笔记、读书摘录，以及偶尔的碎碎念。
-    </p>
+          <p>
+            白天写代码，晚上偶尔开直播。直播内容不固定，有时候是写东西，
+            有时候只是把最近在看的书翻一翻。视频和直播都在 B 站，链接在右边。
+          </p>
 
-    <h2>关于这个站点</h2>
+          <h2>关于这个站点</h2>
 
-    <p>
-      站点用 <a href="https://astro.build" rel="noopener" target="_blank">Astro</a> 构建，
-      部署在 GitHub Pages 上，没有数据库、没有后端，所有内容都是 Markdown 文件。
-      样式是手写的，没有套主题——所以看起来还算干净。
-    </p>
+          <p>
+            站点用 <a href="https://astro.build" rel="noopener" target="_blank">Astro</a> 构建，
+            托管在 GitHub Pages 上。没有数据库、没有后端、没有统计脚本，
+            所有内容都是仓库里的 Markdown 文件。
+          </p>
 
-    <ul>
-      <li>文章源码在仓库的 <code>src/content/posts/</code> 目录</li>
-      <li>推送代码后，GitHub Actions 自动构建并发布</li>
-      <li>订阅可以走 <a href={withBase('/rss.xml')}>RSS</a></li>
-    </ul>
+          <ul>
+            <li>文章源码在 <code>src/content/posts/</code>，改完推上去就自动发布</li>
+            <li>配色只有纸、墨和一个强调黄，样式是照着 Endfield 那套规范自己写的</li>
+            <li>订阅走 <a href={withBase('/rss.xml')}>RSS</a></li>
+          </ul>
 
-    <h2>联系我</h2>
+          <h2>联系</h2>
 
-    <p>
-      {SITE.email && (
-        <>
-          邮箱：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-          <br />
-        </>
-      )}
-      GitHub：<a href={SITE.github} rel="noopener" target="_blank">{SITE.github.replace(/^https?:\/\//, '')}</a>
-    </p>
+          <p>
+            站内留言没有做，想聊天可以直接来直播间，或者
+            <a href={SITE.github} rel="noopener" target="_blank">在 GitHub 上找我</a>。
+          </p>
+        </div>
+      </div>
+
+      <aside class="ef-margin" aria-label="频道与联系">
+        <h2 class="margin-h">频道</h2>
+        <ul class="ef-ledger">
+          <li>
+            <a href={SITE.bilibili.space} target="_blank" rel="noopener">视频空间</a>
+            <span class="ef-field">Bilibili</span>
+          </li>
+          <li>
+            <a href={SITE.bilibili.live} target="_blank" rel="noopener">直播间</a>
+            <span class="ef-field">Bilibili</span>
+          </li>
+          <li>
+            <span>开播时间</span>
+            <span class="ef-field">不固定</span>
+          </li>
+        </ul>
+
+        <h2 class="margin-h">联系</h2>
+        <ul class="ef-ledger">
+          <li>
+            <a href={SITE.github} target="_blank" rel="noopener">GitHub</a>
+            <span class="ef-field">@MapleInkWolf</span>
+          </li>
+          {SITE.email && (
+            <li>
+              <a href={`mailto:${SITE.email}`}>邮箱</a>
+              <span class="ef-field">{SITE.email}</span>
+            </li>
+          )}
+          <li>
+            <a href={withBase('/rss.xml')}>RSS</a>
+            <span class="ef-field">全文订阅</span>
+          </li>
+        </ul>
+      </aside>
+    </article>
   </div>
 </Base>

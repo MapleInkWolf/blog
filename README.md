@@ -2,13 +2,15 @@
 
 线上地址：<https://mapleinkwolf.github.io/blog/>
 
-一个用 [Astro](https://astro.build) 写的极简静态博客：Markdown 写文章，推上 GitHub 就自动发布到 GitHub Pages。没有数据库、没有后端、没有跟踪脚本。
+一个用 [Astro](https://astro.build) 写的静态博客：Markdown 写文章，推上 GitHub 就自动发布到 GitHub Pages。
 
-- 手写的排版样式，浅色 / 深色两套主题（记住你的选择）
-- 文章列表按年份归档，带标签、阅读时长、上一篇 / 下一篇
-- 自动生成 RSS（`/rss.xml`）和 `<meta>` 社交分享信息
-- 响应式，手机上也能看
-- 部署走 GitHub Actions，推送即上线
+视觉上照着 **终末地（Endfield）那套工业风 UI 规范**做的——纸、墨、一个强调黄、切角、细线、宽体大写英文配中文黑体。没有圆角、没有投影、没有渐变。
+
+- 首页是「展示」版式：超大字标、空心大编号、墨色滚动条、切角画框
+- 文章页是「阅读」版式：白纸阅读栏 + 页边的目录和真实统计
+- 浅色 / 深色两套完整主题，右上角可切换并记住选择
+- 自动生成 RSS（`/rss.xml`）和分享用的 `<meta>`
+- 文章编号（No.001）、字数、阅读时长都是构建时算出来的真实数据
 
 ## 本地跑起来
 
@@ -25,12 +27,16 @@ npm run preview  # 预览构建结果
 
 | 想改什么 | 改哪里 |
 | --- | --- |
-| 博客名、作者、简介、邮箱、GitHub | `src/site.config.ts` |
+| 站名、大字标、简介、B站/直播链接、GitHub | `src/site.config.ts` |
 | 导航栏菜单 | `src/site.config.ts` 里的 `NAV` |
-| 全部颜色、字号、间距 | `src/styles/global.css` 顶部的 CSS 变量 |
+| 全部颜色、字体、间距、切角 | `public/endfield.css` 开头的 `--ef-*` 变量 |
+| 页面版式（首屏栅格、页脚、频道卡片） | `public/site.css` |
 | 网站图标 | `public/favicon.svg` |
+| 首屏那张线稿 | `src/pages/index.astro` 里的内联 `<svg>` |
 | 关于页正文 | `src/pages/about.astro` |
 | 示例文章 | `src/content/posts/*.md`（可以直接删） |
+
+**B站链接**写在 `src/site.config.ts` 的 `bilibili` 里，改一处，导航、首屏「频道」区、页脚、关于页会一起变。
 
 ## 写一篇新文章
 
@@ -51,7 +57,7 @@ draft: false
 | 字段 | 必填 | 说明 |
 | --- | --- | --- |
 | `title` | 是 | 文章标题 |
-| `date` | 是 | 发布日期，决定排序 |
+| `date` | 是 | 发布日期，决定排序和编号 |
 | `description` | 否 | 摘要，展示在列表、RSS 和搜索结果里 |
 | `tags` | 否 | 标签数组 |
 | `draft` | 否 | `true` 时不会出现在构建结果里 |
@@ -62,8 +68,6 @@ draft: false
 ## 部署到 GitHub Pages
 
 **1. 建仓库并推送**
-
-在 GitHub 上新建一个仓库（public），然后：
 
 ```bash
 git remote add origin https://github.com/<你的用户名>/<仓库名>.git
@@ -86,41 +90,45 @@ git push -u origin main
 
 不用改任何代码：`astro.config.mjs` 会从 `GITHUB_REPOSITORY` 环境变量推断仓库名，自动处理子路径。
 
-> 注意：私有仓库要在 Free 账户上发布 Pages 是不行的，仓库得是 **public**。文章都是要给人看的，公开也无妨。
+> 注意：私有仓库要在 Free 账户上发布 Pages 是不行的，仓库得是 **public**。
 
-## 常见问题
+## 设计规范从哪来
 
-**推上去页面是 404**
-Pages 的 Source 没选 GitHub Actions，或者 Actions 还在跑。去仓库的 **Actions** 标签页看构建日志。
+界面不是随手拍的，是照着 [hhikr/endfield-ui-skill](https://github.com/hhikr/endfield-ui-skill) 这套规范实现的：
 
-**样式丢了、链接全 404**
-资源路径没带上仓库名。检查 `astro.config.mjs` 里的 `base` 是否为 `/<仓库名>`，以及页面里的链接是否都经过了 `withBase()`。
+- **一个强调色** `#FFFA00`，只表示「当前位置 / 可点击 / 需要注意」，只做填充，上面压墨色字
+- **切掉一个角 = 可以点**，正文和图片都是直角
+- **宽体大写英文在上、中文黑体在下**，数字用等宽数字
+- **1px 细线分区**，不用卡片、投影、圆角
+- **短、硬、机械的动效**，系统开启「减少动态效果」时全部关闭
+- 字体是自托管的 **Saira**（拉丁，宽度轴 50–125）和 **思源黑体 Noto Sans SC**，都从 `@fontsource-variable` 引，不连 Google Fonts，国内也能加载
 
-**想绑自己的域名**
-Pages 设置里填 Custom domain，然后在仓库根目录放一个 `public/CNAME` 文件，内容就是域名。
+想换强调色，改 `public/endfield.css` 里的 `--ef-signal` 一处即可；切角大小改 `--ef-cut-k`。
 
 ## 目录结构
 
 ```text
 .
 ├─ .github/workflows/deploy.yml   # 构建 + 发布
-├─ public/                        # 原样拷贝的静态文件
-│  ├─ favicon.svg
+├─ public/
+│  ├─ endfield.css                # UI 套件（变量 + 全部部件）
+│  ├─ site.css                    # 本站版式
+│  ├─ contours/                   # 背景等高线 SVG
 │  ├─ images/                     # 文章配图
-│  └─ robots.txt
+│  └─ favicon.svg
 ├─ src/
 │  ├─ content/posts/              # 文章（Markdown）
-│  ├─ content.config.ts           # 文章 frontmatter 校验
-│  ├─ layouts/Base.astro          # 页面骨架：head、页头、页脚、主题切换
-│  ├─ lib/                        # 路径拼接、日期和阅读时长
-│  ├─ pages/                      # 路由
-│  │  ├─ index.astro              # 首页
+│  ├─ content.config.ts           # frontmatter 校验
+│  ├─ layouts/Base.astro          # 页头、页脚、主题切换、字体
+│  ├─ lib/posts.ts                # 编号、字数、按年分组
+│  ├─ pages/
+│  │  ├─ index.astro              # 首页（展示版式）
 │  │  ├─ posts/index.astro        # 文章归档
-│  │  ├─ posts/[...slug].astro    # 文章详情
+│  │  ├─ posts/[...slug].astro    # 文章详情（阅读版式）
 │  │  ├─ about.astro
 │  │  ├─ 404.astro
 │  │  └─ rss.xml.js
 │  ├─ site.config.ts              # 站点信息
-│  └─ styles/global.css           # 全部样式
+│  └─ lib/url.ts                  # 子路径拼接
 └─ astro.config.mjs
 ```

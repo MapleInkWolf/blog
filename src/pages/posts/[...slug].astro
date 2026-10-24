@@ -1,82 +1,167 @@
 ---
-import type { CollectionEntry } from 'astro:content';
-import { getCollection, render } from 'astro:content';
+import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { withBase } from '../../lib/url';
-import { formatDate, isoDate, readingTime } from '../../lib/format';
+import {
+  getEntries,
+  formatDate,
+  isoDate,
+  num,
+  readingMinutes,
+  type Entry,
+} from '../../lib/posts';
 
 export async function getStaticPaths() {
-  const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-    (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-  );
+  const entries = await getEntries();
 
-  return posts.map((post, index) => ({
-    params: { slug: post.id },
+  return entries.map((entry, i) => ({
+    params: { slug: entry.post.id },
     props: {
-      post,
-      prev: posts[index + 1] ?? null,
-      next: posts[index - 1] ?? null,
+      entry,
+      older: entries[i - 1] ?? null,
+      newer: entries[i + 1] ?? null,
     },
   }));
 }
 
 interface Props {
-  post: CollectionEntry<'posts'>;
-  prev: CollectionEntry<'posts'> | null;
-  next: CollectionEntry<'posts'> | null;
+  entry: Entry;
+  older: Entry | null;
+  newer: Entry | null;
 }
 
-const { post, prev, next } = Astro.props;
-const { Content } = await render(post);
-const minutes = readingTime(post.body ?? '');
+const { entry, older, newer } = Astro.props;
+const { Content, headings } = await render(entry.post);
+const toc = headings.filter((h) => h.depth === 2 || h.depth === 3);
+const year = entry.post.data.date.getFullYear();
+const tags = entry.post.data.tags;
 ---
 
 <Base
-  title={post.data.title}
-  description={post.data.description || post.data.title}
+  title={entry.post.data.title}
+  description={entry.post.data.description || entry.post.data.title}
   type="article"
-  published={post.data.date}
+  published={entry.post.data.date}
 >
-  <article class="post">
-    <header class="post-header">
-      <h1 class="post-title">{post.data.title}</h1>
-      <div class="post-meta">
-        <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
-        <span>·</span>
-        <span>大约 {minutes}</span>
-        {post.data.tags.length > 0 && (
-          <span class="post-meta__tags">
-            {post.data.tags.map((tag) => (
-              <span class="tag">{tag}</span>
-            ))}
-          </span>
+  <div class="pages">
+    <article class="ef-spread">
+      <div class="ef-sheet">
+        <p class="ef-eyebrow slash">Posts / {year}</p>
+        <p class="ef-crumb ef-field">
+          <a href={withBase('/posts/')}>全部文章</a>
+          <span>{tags[0] ?? String(year)}</span>
+        </p>
+
+        <p class="ids">
+          <a class="ef-tag is-current" href={withBase('/posts/')}>No.{entry.no}</a>
+          {tags.map((tag) => <span class="ef-chip">{tag}</span>)}
+        </p>
+
+        <ul class="ef-facts ef-field">
+          <li><time datetime={isoDate(entry.post.data.date)}>{formatDate(entry.post.data.date)}</time></li>
+          <li>{num(entry.words)} 字</li>
+          <li>约 {readingMinutes(entry.words)} 分钟</li>
+        </ul>
+
+        <h1 class="post-title">{entry.post.data.title}</h1>
+        <div class="ef-tri" aria-hidden="true"><i></i><i></i><i></i></div>
+
+        {entry.post.data.description && (
+          <p class="ef-lede ef-read">{entry.post.data.description}</p>
+        )}
+
+        <div class="ef-prose">
+          <Content />
+        </div>
+
+        {(older || newer) && (
+          <>
+            <h2 class="ef-group-head ef-read">
+              <span>继续阅读</span>
+              <span class="ef-field">{[older, newer].filter(Boolean).length} 篇</span>
+            </h2>
+            <ol class="ef-records">
+              {newer && (
+                <li>
+                  <a class="ef-record" href={withBase(`/posts/${newer.post.id}/`)}>
+                    <span class="ef-tag">No.{newer.no}</span>
+                    <time class="ef-field" datetime={isoDate(newer.post.data.date)}>
+                      {formatDate(newer.post.data.date)}
+                    </time>
+                    <span class="name ef-read">{newer.post.data.title}</span>
+                    <span class="ef-field">{num(newer.words)} 字</span>
+                  </a>
+                </li>
+              )}
+              {older && (
+                <li>
+                  <a class="ef-record" href={withBase(`/posts/${older.post.id}/`)}>
+                    <span class="ef-tag">No.{older.no}</span>
+                    <time class="ef-field" datetime={isoDate(older.post.data.date)}>
+                      {formatDate(older.post.data.date)}
+                    </time>
+                    <span class="name ef-read">{older.post.data.title}</span>
+                    <span class="ef-field">{num(older.words)} 字</span>
+                  </a>
+                </li>
+              )}
+            </ol>
+          </>
         )}
       </div>
-    </header>
 
-    <div class="prose">
-      <Content />
-    </div>
-  </article>
+      <aside class="ef-margin" aria-label="目录与统计">
+        {toc.length > 0 && (
+          <div class="toc">
+            <h2 class="margin-h">目录</h2>
+            <ol>
+              {toc.map((h) => (
+                <li>
+                  <a href={`#${h.slug}`}>{h.text}</a>
+                </li>
+              ))}
+            </ol>
+          </div>
+        )}
 
-  {(prev || next) && (
-    <nav class="post-nav" aria-label="上下篇">
-      {prev ? (
-        <a class="post-nav__link" href={withBase(`/posts/${prev.id}/`)}>
-          <span class="post-nav__label">← 上一篇</span>
-          <span class="post-nav__title">{prev.data.title}</span>
-        </a>
-      ) : (
-        <span />
-      )}
-      {next ? (
-        <a class="post-nav__link post-nav__link--next" href={withBase(`/posts/${next.id}/`)}>
-          <span class="post-nav__label">下一篇 →</span>
-          <span class="post-nav__title">{next.data.title}</span>
-        </a>
-      ) : (
-        <span />
-      )}
-    </nav>
-  )}
+        <h2 class="margin-h">本篇</h2>
+        <ul class="ef-ledger">
+          <li><span>编号</span><span class="ef-field">No.{entry.no}</span></li>
+          <li><span>字数</span><span class="ef-field">{num(entry.words)} 字</span></li>
+          <li><span>阅读时长</span><span class="ef-field">约 {readingMinutes(entry.words)} 分钟</span></li>
+          <li><span>发布</span><span class="ef-field">{formatDate(entry.post.data.date)}</span></li>
+        </ul>
+      </aside>
+    </article>
+  </div>
+
+  <script is:inline>
+    // 目录里标出正在读的那一节
+    (() => {
+      var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
+      if (!links.length) return;
+      var byId = {};
+      links.forEach(function (a) {
+        byId[a.getAttribute('href').slice(1)] = a;
+      });
+      var sections = document.querySelectorAll('.ef-prose h2[id], .ef-prose h3[id]');
+      if (!sections.length) return;
+      var observer = new IntersectionObserver(
+        function (entries) {
+          entries.forEach(function (e) {
+            if (!e.isIntersecting) return;
+            links.forEach(function (a) {
+              a.removeAttribute('aria-current');
+            });
+            var link = byId[e.target.id];
+            if (link) link.setAttribute('aria-current', 'true');
+          });
+        },
+        { rootMargin: '0px 0px -70% 0px' },
+      );
+      sections.forEach(function (s) {
+        observer.observe(s);
+      });
+    })();
+  </script>
 </Base>

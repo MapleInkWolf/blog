@@ -4,9 +4,15 @@ import { withBase } from '../lib/url';
 ---
 
 <Base title="页面没找到">
-  <div class="not-found">
-    <h1>404</h1>
-    <p>这个页面大概是被风吹走了。</p>
-    <p><a href={withBase('/')}>回到首页</a></p>
+  <div class="pages">
+    <div class="ef-sheet not-found">
+      <p class="ef-eyebrow slash">Error / 404</p>
+      <span class="ef-hollow-no" aria-hidden="true">404</span>
+      <p class="ef-lede ef-read">这个地址没有对应的页面，可能是文章改名或者链接少了一截。</p>
+      <p class="ef-actions">
+        <a class="ef-btn go" href={withBase('/')}>回到首页</a>
+        <a class="ef-btn" href={withBase('/posts/')}>全部文章</a>
+      </p>
+    </div>
   </div>
 </Base>

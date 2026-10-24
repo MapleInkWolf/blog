@@ -1,43 +1,181 @@
 ---
 import Base from '../layouts/Base.astro';
-import { getCollection } from 'astro:content';
 import { SITE } from '../site.config';
 import { withBase } from '../lib/url';
-import { formatDate, isoDate, readingTime } from '../lib/format';
+import {
+  getEntries,
+  newestFirst,
+  formatDate,
+  isoDate,
+  num,
+  readingMinutes,
+  tagCounts,
+} from '../lib/posts';
 
-const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
-  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
-);
-const recent = posts.slice(0, SITE.recentPosts);
+const entries = await getEntries();
+const posts = newestFirst(entries);
+const latest = posts[0];
+const totalWords = entries.reduce((sum, e) => sum + e.words, 0);
+const tags = tagCounts(entries);
+const today = new Date();
+const ticker = posts.slice(0, 6);
+const index = posts.slice(0, SITE.indexCount);
 ---
 
-<Base>
+<Base description={SITE.description}>
   <section class="hero">
-    <h1>{SITE.title}</h1>
-    <p>{SITE.tagline}</p>
+    <p class="meta ef-field">
+      <time datetime={isoDate(today)}>{formatDate(today)}</time>
+      <span><b>{entries.length}</b> 篇</span>
+      <span><b>{num(totalWords)}</b> 字</span>
+      <span><b>{tags.length}</b> 个标签</span>
+    </p>
+
+    <h1 class="ef-wordmark">
+      <span class="solid ef-in-drive">{SITE.wordmark.solid}</span>
+      <span class="hollow ef-in-drive" style="animation-delay: 140ms" aria-hidden="true">
+        {SITE.wordmark.hollow}
+      </span>
+      <span class="sr-only">{SITE.title}</span>
+    </h1>
+
+    <div class="copy">
+      <p class="claim"><span class="ef-marker ef-in-stroke">{SITE.claim}</span></p>
+      <p class="bio">{SITE.description}</p>
+      <p class="ef-actions">
+        {latest && (
+          <a class="ef-btn go" href={withBase(`/posts/${latest.post.id}/`)}>
+            读最新一篇 <span class="sub">No.{latest.no}</span>
+          </a>
+        )}
+        <a class="ef-btn" href={withBase('/posts/')}>全部文章</a>
+        <a class="ef-btn" href={SITE.bilibili.live} target="_blank" rel="noopener">直播间</a>
+      </p>
+    </div>
+
+    <figure class="ef-frame">
+      <div class="window">
+        <svg
+          viewBox="0 0 400 420"
+          fill="none"
+          stroke="currentColor"
+          stroke-width="1.5"
+          stroke-linejoin="round"
+          role="img"
+          aria-label="等轴测线稿：一摞叠起来的档案板"
+        >
+          <!-- 底层 -->
+          <g transform="translate(200 190)">
+            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
+            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
+            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
+          </g>
+          <!-- 中层 -->
+          <g transform="translate(200 166)">
+            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
+            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
+            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
+          </g>
+          <!-- 顶层 -->
+          <g transform="translate(200 142)">
+            <path d="M-120 0 L0 60 L120 0 L0 -60 Z" />
+            <path d="M-120 0 L0 60 L0 78 L-120 18 Z" />
+            <path d="M120 0 L0 60 L0 78 L120 18 Z" />
+            <!-- 顶面的两道页边 -->
+            <path d="M-48 24 L12 -6" opacity=".6" />
+            <path d="M-24 12 L36 -18" opacity=".6" />
+            <!-- 左侧面的标签块 -->
+            <path d="M-105 12 L-65 32 L-65 40 L-105 20 Z" opacity=".8" />
+          </g>
+          <text
+            x="26"
+            y="42"
+            font-family="Saira, sans-serif"
+            font-stretch="125%"
+            font-size="11"
+            letter-spacing="2"
+            fill="currentColor"
+            stroke="none">ARCHIVE / 01</text
+          >
+        </svg>
+      </div>
+      <figcaption class="ef-plate">技术、阅读与直播间的档案。</figcaption>
+    </figure>
+
+    <div class="ef-ticker" aria-label="最近的文章">
+      <div class="track">
+        <ul>
+          {ticker.map((e) => (
+            <li>
+              <a href={withBase(`/posts/${e.post.id}/`)}>
+                <b>No.{e.no}</b>{e.post.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+        <ul aria-hidden="true">
+          {ticker.map((e) => (
+            <li>
+              <a href={withBase(`/posts/${e.post.id}/`)} tabindex="-1">
+                <b>No.{e.no}</b>{e.post.data.title}
+              </a>
+            </li>
+          ))}
+        </ul>
+      </div>
+    </div>
   </section>
 
-  <h2 class="section-title">
-    <span>最新文章</span>
-    <a href={withBase('/posts/')}>全部文章 →</a>
-  </h2>
+  {latest && (
+    <section class="latest">
+      <a href={withBase(`/posts/${latest.post.id}/`)}>
+        <span class="ef-hollow-no" aria-hidden="true">{latest.no}</span>
+        <span class="body">
+          <span class="ef-field">
+            <span class="flag">最新</span>
+            {formatDate(latest.post.data.date)} | {num(latest.words)} 字 | 约 {readingMinutes(latest.words)} 分钟
+          </span>
+          <span class="title">{latest.post.data.title}</span>
+          <span class="cap">{latest.post.data.description}</span>
+          <span class="ef-btn go">阅读全文</span>
+        </span>
+      </a>
+    </section>
+  )}
 
-  {recent.length > 0 ? (
-    <ul class="post-list">
-      {recent.map((post) => (
+  <section class="index">
+    <p class="ef-eyebrow slash">Index</p>
+    <h2 class="ef-bar-title">全站索引</h2>
+    <ol class="ef-records">
+      {index.map((e, i) => (
         <li>
-          <a class="post-item" href={withBase(`/posts/${post.id}/`)}>
-            <span class="post-item__title">{post.data.title}</span>
-            <span class="post-item__meta">
-              <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
-              <span>{readingTime(post.body ?? '')}</span>
-            </span>
-            {post.data.description && <p class="post-item__desc">{post.data.description}</p>}
+          <a class="ef-record ef-in-come" style={`--i: ${i}`} href={withBase(`/posts/${e.post.id}/`)}>
+            <span class="ef-tag">No.{e.no}</span>
+            <time class="ef-field" datetime={isoDate(e.post.data.date)}>{formatDate(e.post.data.date)}</time>
+            <span class="name ef-read">{e.post.data.title}</span>
+            <span class="ef-field">{num(e.words)} 字</span>
           </a>
         </li>
       ))}
-    </ul>
-  ) : (
-    <p>还没有文章。在 <code>src/content/posts</code> 里新建一个 <code>.md</code> 文件就能开始写了。</p>
-  )}
+    </ol>
+    <p class="ef-actions index-foot">
+      <a class="ef-btn" href={withBase('/posts/')}>全部 {entries.length} 篇</a>
+    </p>
+  </section>
+
+  <section class="channels" aria-label="B站">
+    <p class="ef-eyebrow slash" style="grid-column: 1 / -1; margin: 0 0 -0.25rem">
+      Channels / 频道
+    </p>
+    <a class="channel" href={SITE.bilibili.space} target="_blank" rel="noopener">
+      <span class="ef-field">Bilibili / Video</span>
+      <b>视频空间</b>
+      <span class="ef-field">space.bilibili.com/44972013</span>
+    </a>
+    <a class="channel" href={SITE.bilibili.live} target="_blank" rel="noopener">
+      <span class="ef-field">Bilibili / Live</span>
+      <b>直播间</b>
+      <span class="ef-field">live.bilibili.com/2132018</span>
+    </a>
+  </section>
 </Base>

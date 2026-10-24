@@ -1,26 +1,34 @@
 /**
  * 站点信息：改这里就够了。
- * 这些文字会出现在首页、页脚、RSS 和浏览器标签页上。
  */
 export const SITE = {
-  /** 浏览器标签页和页头显示的名字 */
+  /** 站名，浏览器标签页用 */
   title: 'MapleInkWolf',
-  /** 首页大标题下面那句自我介绍 */
+  /** 首屏大字标：实心一行 + 空心一行 */
+  wordmark: { solid: 'MAPLE', hollow: 'INKWOLF' },
+  /** 首屏那句荧光笔标注，只写一句 */
+  claim: '代码、阅读，和直播间里的那些零碎',
+  /** 一句话介绍，首屏大字标下面 */
+  description: '记录技术上的折腾、读过的书，以及直播时聊到的零散想法。',
+  /** 用于 SEO / RSS 的站点描述 */
   tagline: '写点代码，记点生活。',
-  /** 一句话站点描述，用于 SEO 和 RSS */
-  description: '一个用 Astro 做的静态博客，记录技术、阅读和一些随手写下的想法。',
-  /** 你的名字 */
   author: 'MapleInkWolf',
-  /** 页脚的联系方式，不想要就留空字符串 */
+  /** 联系方式，不想要就留空字符串 */
   email: '',
   github: 'https://github.com/MapleInkWolf',
-  /** 首页最多展示几篇最新文章 */
-  recentPosts: 5,
+  bilibili: {
+    space: 'https://space.bilibili.com/44972013',
+    live: 'https://live.bilibili.com/2132018',
+  },
+  /** 首页索引最多列出几篇 */
+  indexCount: 8,
 } as const;
 
-/** 导航栏，路径相对于站点根目录 */
+/** 导航栏 */
 export const NAV = [
-  { href: '/', label: '首页' },
-  { href: '/posts/', label: '文章' },
-  { href: '/about/', label: '关于' },
+  { href: '/', label: '首页', en: 'Home' },
+  { href: '/posts/', label: '文章', en: 'Posts' },
+  { href: '/about/', label: '关于', en: 'About' },
+  { href: SITE.bilibili.space, label: 'B站', en: 'Video', external: true },
+  { href: SITE.bilibili.live, label: '直播', en: 'Live', external: true },
 ] as const;
