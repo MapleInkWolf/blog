@@ -1,5 +1,7 @@
 # 我的博客
 
+线上地址：<https://mapleinkwolf.github.io/blog/>
+
 一个用 [Astro](https://astro.build) 写的极简静态博客：Markdown 写文章，推上 GitHub 就自动发布到 GitHub Pages。没有数据库、没有后端、没有跟踪脚本。
 
 - 手写的排版样式，浅色 / 深色两套主题（记住你的选择）

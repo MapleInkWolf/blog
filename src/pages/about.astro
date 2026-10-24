@@ -32,13 +32,13 @@ import { withBase } from '../lib/url';
     <h2>联系我</h2>
 
     <p>
-      邮箱：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
-      {SITE.github && (
+      {SITE.email && (
         <>
+          邮箱：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
           <br />
-          GitHub：<a href={SITE.github} rel="noopener" target="_blank">{SITE.github.replace(/^https?:\/\//, '')}</a>
         </>
       )}
+      GitHub：<a href={SITE.github} rel="noopener" target="_blank">{SITE.github.replace(/^https?:\/\//, '')}</a>
     </p>
   </div>
 </Base>
