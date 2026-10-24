@@ -22,12 +22,16 @@ const pageTitle = title ? `${title} / ${SITE.title}` : `${SITE.title} / ${SITE.t
 const origin = Astro.site ?? new URL(Astro.url.origin);
 const canonical = new URL(Astro.url.pathname, origin).href;
 const current = Astro.url.pathname.replace(/\/+$/, '') || '/';
+const base = import.meta.env.BASE_URL.replace(/\/+$/, '');
+
+// 去掉 base 前缀再比较，否则 /blog/ 会把每个页面都算成首页
+const rel = base && current.startsWith(base) ? current.slice(base.length) || '/' : current;
 
 const isActive = (href: string) => {
   if (href.startsWith('http')) return false;
-  const target = withBase(href).replace(/\/+$/, '') || '/';
-  if (target === '/') return current === '/';
-  return current === target || current.startsWith(`${target}/`);
+  if (href === '/') return rel === '/';
+  const target = href.replace(/\/+$/, '');
+  return rel === target || rel.startsWith(`${target}/`);
 };
 
 const year = new Date().getFullYear();
