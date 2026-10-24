@@ -1,0 +1,20 @@
+本仓库用到的第三方资源
+
+1. 界面规范
+   endfield-ui-skill — https://github.com/hhikr/endfield-ui-skill
+   public/endfield.css 与 public/contours/ 出自该仓库，作者声明代码、模板、
+   token 与规则可自由使用。本站在其规则之上重写了版式（public/site.css），
+   未使用任何游戏官方素材。
+
+2. 字体
+   Saira — Copyright 2020 The Saira Project Authors
+   许可：SIL Open Font License 1.1 — https://openfontlicense.org
+
+   Noto Sans SC — Copyright 2014-2021 Adobe (http://www.adobe.com/), with Reserved Font Name 'Source'.
+   许可：SIL Open Font License 1.1 — https://openfontlicense.org
+
+   两者通过 @fontsource-variable 打包进站点，字体文件与许可证一并随本仓库分发，
+   完整许可文本见 node_modules/@fontsource-variable/*/LICENSE。
+
+3. 框架
+   Astro — MIT License — https://astro.build
