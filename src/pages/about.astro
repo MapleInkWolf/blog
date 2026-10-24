@@ -1,0 +1,44 @@
+---
+import Base from '../layouts/Base.astro';
+import { SITE } from '../site.config';
+import { withBase } from '../lib/url';
+---
+
+<Base title="关于" description={`关于 ${SITE.author}`}>
+  <h1 class="page-title">关于</h1>
+
+  <div class="prose">
+    <p>你好，我是 {SITE.author}。这里是我的博客。</p>
+
+    <p>
+      我平时写代码，也读一些闲书。这个站点用来放那些值得写下来、但发在社交平台又太长的东西：
+      技术笔记、读书摘录，以及偶尔的碎碎念。
+    </p>
+
+    <h2>关于这个站点</h2>
+
+    <p>
+      站点用 <a href="https://astro.build" rel="noopener" target="_blank">Astro</a> 构建，
+      部署在 GitHub Pages 上，没有数据库、没有后端，所有内容都是 Markdown 文件。
+      样式是手写的，没有套主题——所以看起来还算干净。
+    </p>
+
+    <ul>
+      <li>文章源码在仓库的 <code>src/content/posts/</code> 目录</li>
+      <li>推送代码后，GitHub Actions 自动构建并发布</li>
+      <li>订阅可以走 <a href={withBase('/rss.xml')}>RSS</a></li>
+    </ul>
+
+    <h2>联系我</h2>
+
+    <p>
+      邮箱：<a href={`mailto:${SITE.email}`}>{SITE.email}</a>
+      {SITE.github && (
+        <>
+          <br />
+          GitHub：<a href={SITE.github} rel="noopener" target="_blank">{SITE.github.replace(/^https?:\/\//, '')}</a>
+        </>
+      )}
+    </p>
+  </div>
+</Base>

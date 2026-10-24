@@ -1,0 +1,43 @@
+---
+import Base from '../layouts/Base.astro';
+import { getCollection } from 'astro:content';
+import { SITE } from '../site.config';
+import { withBase } from '../lib/url';
+import { formatDate, isoDate, readingTime } from '../lib/format';
+
+const posts = (await getCollection('posts', ({ data }) => !data.draft)).sort(
+  (a, b) => b.data.date.valueOf() - a.data.date.valueOf(),
+);
+const recent = posts.slice(0, SITE.recentPosts);
+---
+
+<Base>
+  <section class="hero">
+    <h1>{SITE.title}</h1>
+    <p>{SITE.tagline}</p>
+  </section>
+
+  <h2 class="section-title">
+    <span>最新文章</span>
+    <a href={withBase('/posts/')}>全部文章 →</a>
+  </h2>
+
+  {recent.length > 0 ? (
+    <ul class="post-list">
+      {recent.map((post) => (
+        <li>
+          <a class="post-item" href={withBase(`/posts/${post.id}/`)}>
+            <span class="post-item__title">{post.data.title}</span>
+            <span class="post-item__meta">
+              <time datetime={isoDate(post.data.date)}>{formatDate(post.data.date)}</time>
+              <span>{readingTime(post.body ?? '')}</span>
+            </span>
+            {post.data.description && <p class="post-item__desc">{post.data.description}</p>}
+          </a>
+        </li>
+      ))}
+    </ul>
+  ) : (
+    <p>还没有文章。在 <code>src/content/posts</code> 里新建一个 <code>.md</code> 文件就能开始写了。</p>
+  )}
+</Base>
