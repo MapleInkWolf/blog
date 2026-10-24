@@ -1,7 +1,8 @@
 ---
-import { PLAYLIST, fmtDuration, totalDuration } from '../data/playlist';
+import { PLAYLIST, fmtDuration, totalDuration, playableCount } from '../data/playlist';
 
 const first = PLAYLIST.tracks[0];
+const playable = playableCount();
 const playerSrc = (id: string, auto: 0 | 1) =>
   `https://music.163.com/outchain/player?type=2&id=${id}&auto=${auto}&height=66`;
 ---
@@ -14,7 +15,7 @@ const playerSrc = (id: string, auto: 0 | 1) =>
       <p class="ef-field pl-meta">
         <span>{PLAYLIST.tracks.length} 首</span>
         <span>共 {totalDuration()}</span>
-        <span>网易云音乐</span>
+        <span>{playable} 首直接能放</span>
       </p>
     </div>
     <a class="ef-btn small" href={PLAYLIST.url} target="_blank" rel="noopener">整张歌单</a>
@@ -36,22 +37,43 @@ const playerSrc = (id: string, auto: 0 | 1) =>
       loading="lazy"></iframe>
   </div>
 
+  <p class="ef-notice pl-notice" id="pl-notice" data-flag="会员" hidden>
+    这首要开网易云会员才能放。可以在右边的播放器里登录会员账号，或者点「整张歌单」用客户端听。
+  </p>
+
+  <div class="pl-filters" role="group" aria-label="筛选曲目">
+    <button class="ef-chip" type="button" data-filter="all" aria-pressed="true">
+      全部 <span class="n">{PLAYLIST.tracks.length}</span>
+    </button>
+    <button class="ef-chip" type="button" data-filter="free" aria-pressed="false">
+      直接能放 <span class="n">{playable}</span>
+    </button>
+  </div>
+
   <ol class="ef-records pl-list">
     {PLAYLIST.tracks.map((track, i) => {
       const no = String(i + 1).padStart(2, '0');
       return (
-        <li>
+        <li data-vip={track.vip ? 'true' : 'false'}>
           <button
             type="button"
             class="ef-record pl-row"
             data-song={track.id}
             data-no={no}
             data-title={track.title}
+            data-vip={track.vip ? '1' : '0'}
             aria-pressed="false"
-            aria-label={`播放 No.${no} ${track.title}，${track.artist}`}
+            aria-label={`播放 No.${no} ${track.title}，${track.artist}${track.vip ? '，需要会员' : ''}`}
           >
             <span class="ef-tag">No.{no}</span>
-            <span class="name ef-read">{track.title}</span>
+            <span class="name ef-read">
+              {track.title}
+              {track.vip && (
+                <span class="ef-state pl-vip" title="需要网易云会员">
+                  VIP
+                </span>
+              )}
+            </span>
             <span class="pl-artist ef-field">{track.artist}</span>
             <span class="ef-field">{fmtDuration(track.duration)}</span>
           </button>
@@ -61,7 +83,7 @@ const playerSrc = (id: string, auto: 0 | 1) =>
   </ol>
 
   <p class="ef-empty pl-note">
-    播放器由网易云音乐提供，点一行就换一首；需要登录或会员的曲目，会在播放器里提示。
+    播放器由网易云音乐提供。标了 VIP 的曲子没有会员放不出来，其余的直接能放；需要登录时，在播放器里点一下登录就行。
   </p>
 </section>
 
@@ -69,7 +91,9 @@ const playerSrc = (id: string, auto: 0 | 1) =>
   (() => {
     var frame = document.getElementById('pl-frame');
     var now = document.getElementById('pl-now-title');
+    var notice = document.getElementById('pl-notice');
     var rows = Array.prototype.slice.call(document.querySelectorAll('.pl-row'));
+    var chips = Array.prototype.slice.call(document.querySelectorAll('[data-filter]'));
     if (!frame || !rows.length) return;
 
     rows.forEach(function (row) {
@@ -84,6 +108,7 @@ const playerSrc = (id: string, auto: 0 | 1) =>
         var id = row.getAttribute('data-song');
         var no = row.getAttribute('data-no');
         var title = row.getAttribute('data-title');
+        var vip = row.getAttribute('data-vip') === '1';
 
         // 换 iframe 的 src 就会重新加载并自动播放这一首
         frame.src =
@@ -92,6 +117,20 @@ const playerSrc = (id: string, auto: 0 | 1) =>
           '&auto=1&height=66';
 
         if (now) now.textContent = 'No.' + no + ' · ' + title;
+        if (notice) notice.hidden = !vip;
+      });
+    });
+
+    chips.forEach(function (chip) {
+      chip.addEventListener('click', function () {
+        var mode = chip.getAttribute('data-filter');
+        chips.forEach(function (c) {
+          c.setAttribute('aria-pressed', String(c === chip));
+        });
+        rows.forEach(function (row) {
+          var hidden = mode === 'free' && row.getAttribute('data-vip') === '1';
+          row.parentElement.hidden = hidden;
+        });
       });
     });
   })();

@@ -532,6 +532,23 @@ html[data-theme='dark'] .hero .ef-frame .shot {
   margin-top: 1.25rem;
 }
 
+.pl-filters {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.5rem;
+  margin-bottom: 1rem;
+}
+
+.pl-vip {
+  margin-left: 0.45em;
+  font-size: 0.62rem;
+  vertical-align: 0.14em;
+}
+
+.pl-notice {
+  margin: 0 0 1.25rem;
+}
+
 @media (max-width: 719px) {
   .pl-list .pl-row {
     grid-template-columns: auto minmax(0, 1fr) auto;
