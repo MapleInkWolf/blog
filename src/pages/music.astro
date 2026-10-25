@@ -1,0 +1,122 @@
+---
+import Base from '../layouts/Base.astro';
+import { PLAYLIST, fmtDuration, totalDuration } from '../data/playlist';
+
+const tracks = PLAYLIST.tracks;
+const first = tracks[0];
+---
+
+<Base title="歌单" description={`${PLAYLIST.name}：${tracks.length} 首，共 ${totalDuration()}。`}>
+  <div class="pages">
+    <section class="music">
+      <p class="ef-eyebrow slash">Playlist</p>
+      <h1 class="music-title">{PLAYLIST.name}</h1>
+      <p class="ef-field pl-meta">
+        <span>{tracks.length} 首</span>
+        <span>共 {totalDuration()}</span>
+        <span>网易云音乐</span>
+      </p>
+
+      <div class="music-now">
+        <div class="music-cover-wrap">
+          <img
+            class="music-cover"
+            data-player-cover
+            src={first.cover}
+            alt=""
+            width="300"
+            height="300"
+            referrerpolicy="no-referrer"
+          />
+        </div>
+
+        <div class="music-info">
+          <p class="ef-field">正在播放</p>
+          <p class="music-name" data-player-title>No.01 · {first.title}</p>
+          <p class="music-artist" data-player-artist>{first.artist}</p>
+
+          <span class="music-seek" data-player-seek role="slider" tabindex="0" aria-label="播放进度">
+            <i data-player-fill></i>
+          </span>
+          <p class="ef-field music-time" data-player-time>0:00 / 0:00</p>
+
+          <div class="music-ctrl">
+            <button type="button" class="pbtn" data-player="prev" aria-label="上一首">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M6 5h2v14H6zM20 5v14L9 12z" fill="currentColor" /></svg>
+            </button>
+            <button
+              type="button"
+              class="pbtn pbtn--main"
+              data-player="toggle"
+              data-player-toggle
+              aria-label="播放"
+              aria-pressed="false"
+            >
+              <svg class="i-play" viewBox="0 0 24 24" aria-hidden="true"><path d="M8 5v14l11-7z" fill="currentColor" /></svg>
+              <svg class="i-pause" viewBox="0 0 24 24" aria-hidden="true"><path d="M7 5h4v14H7zM13 5h4v14h-4z" fill="currentColor" /></svg>
+            </button>
+            <button type="button" class="pbtn" data-player="next" aria-label="下一首">
+              <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5h2v14h-2zM4 5v14l11-7z" fill="currentColor" /></svg>
+            </button>
+            <a
+              class="ef-btn small music-open"
+              data-player-link
+              href={PLAYLIST.url}
+              target="_blank"
+              rel="noopener">在网易云打开</a
+            >
+          </div>
+
+          <p class="ef-notice music-err" data-player-error hidden>
+            <span data-player-error-text>没拿到音频。</span>
+            <a data-player-link href={PLAYLIST.url} target="_blank" rel="noopener">去网易云听</a>
+          </p>
+
+          <p class="ef-notice music-err" data-flag="试听" data-player-preview hidden>
+            这首是会员曲目，第三方接口只给 30 秒试听。<a
+              data-player-link
+              href={PLAYLIST.url}
+              target="_blank"
+              rel="noopener">去网易云听全曲</a
+            >
+          </p>
+        </div>
+      </div>
+
+      <h2 class="ef-group-head ef-read">
+        <span>曲目</span>
+        <span class="ef-field">{tracks.length} 首</span>
+      </h2>
+
+      <ol class="ef-records pl-list">
+        {tracks.map((track, i) => {
+          const no = String(i + 1).padStart(2, '0');
+          return (
+            <li>
+              <button
+                type="button"
+                class="ef-record pl-row"
+                data-track={i}
+                aria-label={`播放 No.${no} ${track.title}，${track.artist}`}
+              >
+                <span class="ef-tag">No.{no}</span>
+                <span class="name ef-read">
+                  {track.title}
+                  {track.vip && (
+                    <span class="ef-state pl-vip" title="会员曲目，这里只有 30 秒试听">试听</span>
+                  )}
+                </span>
+                <span class="pl-artist ef-field">{track.artist}</span>
+                <span class="ef-field">{fmtDuration(track.duration)}</span>
+              </button>
+            </li>
+          );
+        })}
+      </ol>
+
+      <p class="ef-empty pl-note">
+        点任意一行开始播放。会员曲目（标了「试听」的）第三方接口只给 30 秒，全曲请点「在网易云打开」。
+      </p>
+    </section>
+  </div>
+</Base>

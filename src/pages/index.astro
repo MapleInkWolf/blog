@@ -1,6 +1,6 @@
----
+﻿---
+import { existsSync } from 'node:fs';
 import Base from '../layouts/Base.astro';
-import Player from '../components/Player.astro';
 import { SITE } from '../site.config';
 import { withBase } from '../lib/url';
 import {
@@ -12,6 +12,10 @@ import {
   readingMinutes,
   tagCounts,
 } from '../lib/posts';
+
+// 后台传过图就用 hero.jpg，否则用默认那张
+const hasCustomHero = existsSync('public/images/hero.jpg');
+const heroSrc = withBase(hasCustomHero ? '/images/hero.jpg' : '/images/eku.jpg');
 
 const entries = await getEntries();
 const posts = newestFirst(entries);
@@ -58,8 +62,8 @@ const index = posts.slice(0, SITE.indexCount);
       <div class="window">
         <img
           class="shot"
-          src={withBase('/images/eku.jpg')}
-          alt="插画：抱着甜甜圈的 EKU"
+          src={heroSrc}
+          alt="首页插画"
           width="1200"
           height="1000"
         />
@@ -133,8 +137,6 @@ const index = posts.slice(0, SITE.indexCount);
     </p>
   </section>
 
-  <Player />
-
   <section class="channels" aria-label="B站">
     <p class="ef-eyebrow slash" style="grid-column: 1 / -1; margin: 0 0 -0.25rem">
       Channels / 频道
@@ -150,60 +152,4 @@ const index = posts.slice(0, SITE.indexCount);
       <span class="ef-field">live.bilibili.com/2132018</span>
     </a>
   </section>
-  <script is:inline>
-    // 右上角 ARCHIVE / 01：乱码滚动后落定，然后色条长满
-    (() => {
-      var code = document.querySelector('[data-decode]');
-      if (!code) return;
-      var bar = document.querySelector('.hud-bar');
-      var target = code.getAttribute('data-decode') || '';
-      var reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
-
-      function settle() {
-        code.textContent = target;
-        code.classList.add('is-done');
-        if (bar) bar.classList.add('is-full');
-      }
-
-      if (reduce || !target) {
-        settle();
-        return;
-      }
-
-      var glyphs = 'ABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789#/+=';
-      var total = 26;
-
-      function scramble(str) {
-        var out = '';
-        for (var i = 0; i < str.length; i++) {
-          var ch = str.charAt(i);
-          out += ch === ' ' ? ' ' : glyphs.charAt(Math.floor(Math.random() * glyphs.length));
-        }
-        return out;
-      }
-
-      // 先铺一层乱码，等首屏画出来再落定——不然动效在图片加载前就跑完了
-      code.textContent = scramble(target);
-      setTimeout(function () {
-        var frame = 0;
-        var timer = setInterval(function () {
-          frame++;
-          var done = Math.floor((frame / total) * target.length);
-          var out = target.slice(0, done);
-          for (var i = done; i < target.length; i++) {
-            var ch = target.charAt(i);
-            out +=
-              ch === ' '
-                ? ' '
-                : glyphs.charAt(Math.floor(Math.random() * glyphs.length));
-          }
-          code.textContent = out;
-          if (frame >= total) {
-            clearInterval(timer);
-            settle();
-          }
-        }, 24);
-      }, 320);
-    })();
-  </script>
 </Base>

@@ -1,0 +1,153 @@
+---
+import Base from '../layouts/Base.astro';
+import { withBase } from '../lib/url';
+---
+
+<Base title="控制台" noindex>
+  <div class="pages">
+    <section class="admin">
+      <header class="ef-head admin-head">
+        <p class="ef-eyebrow slash">Console</p>
+        <h1 class="admin-title">控制台 <small>Admin</small></h1>
+        <p class="admin-desc">
+          在这里增删改文章、换首页插画。所有改动都以 commit 的形式写进 GitHub 仓库，Actions 构建完就生效。
+        </p>
+      </header>
+
+      <div id="gate" class="admin-gate">
+        <p class="ef-notice" data-flag="权限">
+          需要一个 GitHub 细粒度 token：只授权这个仓库，权限选 Contents → Read and write。
+          它只存在这台浏览器的 localStorage 里，不会上传到任何地方。
+        </p>
+
+        <form class="ef-form" id="token-form">
+          <label class="field">
+            <span>GitHub Token</span>
+            <input
+              type="password"
+              id="token"
+              name="token"
+              placeholder="github_pat_..."
+              autocomplete="off"
+              spellcheck="false"
+              required
+            />
+            <small>GitHub → Settings → Developer settings → Personal access tokens → Fine-grained tokens。</small>
+          </label>
+          <p class="ef-actions">
+            <button class="ef-btn go" type="submit">连接</button>
+          </p>
+          <p class="ef-notice" id="auth-msg" data-flag="出错" hidden></p>
+        </form>
+      </div>
+
+      <section id="console" hidden>
+        <div class="admin-status">
+          <p class="ef-field" id="who">—</p>
+          <span class="admin-status__acts">
+            <a class="ef-btn small" id="actions-link" target="_blank" rel="noopener">构建记录</a>
+            <button class="ef-btn small" id="disconnect" type="button">断开</button>
+          </span>
+        </div>
+
+        <div class="ef-seg admin-tabs" role="tablist" aria-label="控制台分区">
+          <label><input type="radio" name="tab" value="posts" checked /><span>文章</span></label>
+          <label><input type="radio" name="tab" value="hero" /><span>首页图</span></label>
+        </div>
+
+        <section class="admin-pane" data-pane="posts">
+          <div class="admin-bar">
+            <p class="ef-eyebrow slash">Posts / 文章</p>
+            <span class="admin-bar__acts">
+              <button class="ef-btn small" id="reload" type="button">刷新</button>
+              <button class="ef-btn small go" id="new" type="button">新建文章</button>
+            </span>
+          </div>
+
+          <ol class="ef-records" id="post-list"></ol>
+          <p class="ef-empty" id="post-empty" hidden>这个仓库里还没有文章。</p>
+
+          <form class="ef-form admin-editor" id="editor" hidden>
+            <h2 class="ef-group-head ef-read">
+              <span id="editor-title">新建文章</span>
+              <span class="ef-field" id="editor-state">未保存</span>
+            </h2>
+
+            <div class="admin-grid">
+              <label class="field">
+                <span>文件名（slug）</span>
+                <input id="f-slug" placeholder="my-new-post" spellcheck="false" required />
+                <small>网址是 /posts/&lt;slug&gt;/，建议英文小写加连字符。</small>
+              </label>
+              <label class="field">
+                <span>日期</span>
+                <input id="f-date" type="date" required />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>标题</span>
+              <input id="f-title" required />
+            </label>
+
+            <label class="field">
+              <span>摘要</span>
+              <input id="f-desc" placeholder="一两句话，会出现在列表和 RSS 里" />
+            </label>
+
+            <div class="admin-grid">
+              <label class="field">
+                <span>标签（逗号分隔）</span>
+                <input id="f-tags" placeholder="随笔, 技术" />
+              </label>
+              <label class="ef-setting">
+                <span><b>草稿</b><small>勾上就先不发布。</small></span>
+                <input class="ef-switch" type="checkbox" id="f-draft" />
+              </label>
+            </div>
+
+            <label class="field">
+              <span>正文（Markdown）</span>
+              <textarea id="f-body" rows="20" spellcheck="false"></textarea>
+            </label>
+
+            <p class="ef-actions">
+              <button class="ef-btn go" type="submit" id="save">保存并提交</button>
+              <button class="ef-btn" type="button" id="cancel">取消</button>
+              <button class="ef-btn small danger" type="button" id="delete" hidden>删除这篇</button>
+            </p>
+
+            <p class="ef-notice" id="editor-msg" data-flag="提示" hidden></p>
+          </form>
+        </section>
+
+        <section class="admin-pane" data-pane="hero" hidden>
+          <p class="ef-eyebrow slash">Hero / 首页插画</p>
+
+          <div class="admin-hero">
+            <div class="admin-hero__shot">
+              <img id="hero-preview" src={withBase('/images/eku.jpg')} alt="当前首页插画" />
+            </div>
+            <div class="admin-hero__side">
+              <p class="ef-field" id="hero-state">当前：默认插画</p>
+              <label class="field">
+                <span>选择图片</span>
+                <input type="file" id="hero-file" accept="image/jpeg,image/png,image/webp" />
+                <small>会存成 public/images/hero.jpg（最长边压到 1600），构建后全站生效。</small>
+              </label>
+              <p class="ef-actions">
+                <button class="ef-btn go" id="hero-upload" type="button">上传并替换</button>
+                <button class="ef-btn" id="hero-reset" type="button">恢复默认</button>
+              </p>
+              <p class="ef-notice" id="hero-msg" data-flag="提示" hidden></p>
+            </div>
+          </div>
+        </section>
+      </section>
+    </section>
+  </div>
+
+  <script>
+    import '../scripts/admin.js';
+  </script>
+</Base>

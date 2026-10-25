@@ -31,34 +31,48 @@ npm run preview  # 预览构建结果
 | 站名、大字标、简介、B站/直播链接、GitHub | `src/site.config.ts` |
 | 导航栏菜单 | `src/site.config.ts` 里的 `NAV` |
 | 全部颜色、字体、间距、切角 | `public/endfield.css` 开头的 `--ef-*` 变量 |
-| 页面版式（首屏栅格、页脚、频道卡片） | `public/site.css` |
+| 页面版式（首屏栅格、页脚、频道卡片、播放器） | `public/site.css` |
 | 网站图标 | `public/favicon.svg` |
-| 首屏插画 | 换掉 `public/images/eku.jpg`，或改 `src/pages/index.astro` 里 `<img class="shot">` 的 src |
-| 首页歌单 | `src/data/playlist.ts`（曲目、时长都在这） |
+| 首屏插画 | 后台「首页图」上传，或直接换 `public/images/eku.jpg` |
+| 歌单曲目 | `src/data/playlist.ts` |
 | 关于页正文 | `src/pages/about.astro` |
 | 示例文章 | `src/content/posts/*.md`（可以直接删） |
 
 **B站链接**写在 `src/site.config.ts` 的 `bilibili` 里，改一处，导航、首屏「频道」区、页脚、关于页会一起变。
 
+## 在线改文章（控制台）
+
+<https://mapleinkwolf.github.io/blog/admin/>
+
+页面是纯前端，直接调 GitHub API 往仓库提交 commit：
+
+1. 点「连接」前先建一个 **Fine-grained token**：只授权 `MapleInkWolf/blog` 这一个仓库，权限只给 **Contents → Read and write**（GitHub → Settings → Developer settings → Personal access tokens）
+2. 把 token 粘进去，它会存在这台浏览器的 localStorage，不会发到别处
+3. 左边的列表可以直接 **新建 / 编辑 / 删除** 文章，保存就是一次 commit，Actions 跑完（约 1 分钟）上线
+4. 「首页图」页签可以上传自己的插画：会压到最长边 1600、转成 JPEG，提交到 `public/images/hero.jpg`；点「恢复默认」删掉它就回到 `eku.jpg`
+
+编辑器写的是 frontmatter + Markdown，字段和下面「写一篇新文章」那节一致。换了设备或清了缓存就重新粘一次 token。
+
+> token 只在本机浏览器里，别把它贴给别人；丢了就在 GitHub 上撤销重发。
+
 ## 音乐播放器
 
-首页的「// PLAYLIST」区是整张歌单：上面是网易云官方的外链播放器，下面是曲目列表。
+歌单单独一页：`/music/`。播放器本身在顶栏，全站都在：
 
-- 点任意一行 → 把 iframe 的 `src` 换成那首歌的 `id` 并且 `auto=1`，同时把这行的编号点亮
-- 播放、暂停、进度都在那个 66px 的官方播放器里，不需要自己实现音频
-- 曲目数据在 `src/data/playlist.ts`，是写死的：构建时不去请求网易云接口（Actions 的机器在海外，容易超时）
-- 换歌单就改这个文件：`id`、`name`、`url`，再按 `https://music.163.com/api/v3/song/detail` 把每首的 `id` 和 `duration`（毫秒）抄进来
+- 自绘的 UI（封面、标题、播放/暂停、上一首/下一首、进度条），不再是网易云那个白色 iframe
+- 用 `<audio>` 播，地址在播放时通过 Meting 接口解析：`https://api.injahow.cn/meting/?server=netease&type=url&id=<songId>`，它会 302 跳到真实 mp3
+- 用 Astro 的 `<ClientRouter />` + `transition:persist`，站内跳页时播放器 DOM 不销毁，**音乐不会断**
+- 曲目数据在 `src/data/playlist.ts`（id、标题、艺人、时长、封面）
 
-**会员曲目怎么办**：接口里 `privilege.fee = 1` 且 `privilege.pl = 0` 的歌，没开会员就是放不出来。这类歌在 `playlist.ts` 里标 `vip: true`，站点会给它们加一个 VIP 标记，点开会提示去会员账号或客户端；上面的「直接能放」筛选可以只看免会员的。
-
-播放器里如果提示要登录，点播放器自己的登录入口就行——登录状态走的是访客自己浏览器的网易云 cookie，跟站点无关。
+**会员曲目**：标了「试听」的 4 首（No.02 / 04 / 05 / 06）是网易云会员曲，第三方接口只给 30 秒预览，播放时页面会弹出提示，全曲点「在网易云打开」。
+如果哪天接口挂了，播放器会在进度条上方提示「去网易云」。
 
 ## 首屏插画与角标动效
 
-- 插画放 `public/images/eku.jpg`，在画框里用 `object-fit: contain` 铺开；深色主题下会自动压暗一点
+- 默认用 `public/images/eku.jpg`；后台传过 `public/images/hero.jpg` 就自动用新的（构建时判断）
 - 左上角的 `ARCHIVE / 01` 是一个角标：加载时先铺一层乱码，等首屏画出来再从乱码滚到正常文字，下面的色条同时长满
 - 鼠标移到画框上：图片轻微放大，一条扫描线从上往下扫过
-- 以上动效都写在 `public/site.css`（`shot-in` / `scan` / `.frame-hud`）和 `src/pages/index.astro` 末尾的内联脚本里，系统开启「减少动态效果」时全部关闭
+- 动效写在 `public/site.css`（`shot-in` / `scan` / `.frame-hud`）和 `src/layouts/Base.astro` 的 `initDecode()` 里，系统开启「减少动态效果」时全部关闭
 
 ## 写一篇新文章
 
@@ -136,15 +150,22 @@ git push -u origin main
 │  ├─ endfield.css                # UI 套件（变量 + 全部部件）
 │  ├─ site.css                    # 本站版式
 │  ├─ contours/                   # 背景等高线 SVG
-│  ├─ images/                     # 文章配图
+│  ├─ images/                     # 配图（eku.jpg 默认插画、hero.jpg 自定义）
 │  └─ favicon.svg
 ├─ src/
 │  ├─ content/posts/              # 文章（Markdown）
 │  ├─ content.config.ts           # frontmatter 校验
-│  ├─ layouts/Base.astro          # 页头、页脚、主题切换、字体
+│  ├─ data/playlist.ts            # 歌单：id、标题、时长、封面、vip 标记
+│  ├─ layouts/Base.astro          # 页头（含播放器）、页脚、主题、页面初始化
+│  ├─ components/PlayerBar.astro  # 顶栏迷你播放器
+│  ├─ scripts/
+│  │  ├─ player.js                # 播放器逻辑（跨页续播）
+│  │  └─ admin.js                 # 控制台：GitHub API 读写
 │  ├─ lib/posts.ts                # 编号、字数、按年分组
 │  ├─ pages/
 │  │  ├─ index.astro              # 首页（展示版式）
+│  │  ├─ music.astro              # 歌单页
+│  │  ├─ admin.astro              # 控制台（noindex）
 │  │  ├─ posts/index.astro        # 文章归档
 │  │  ├─ posts/[...slug].astro    # 文章详情（阅读版式）
 │  │  ├─ about.astro

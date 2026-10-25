@@ -1,4 +1,4 @@
----
+﻿---
 import { render } from 'astro:content';
 import Base from '../../layouts/Base.astro';
 import { withBase } from '../../lib/url';
@@ -135,33 +135,4 @@ const tags = entry.post.data.tags;
     </article>
   </div>
 
-  <script is:inline>
-    // 目录里标出正在读的那一节
-    (() => {
-      var links = Array.prototype.slice.call(document.querySelectorAll('.toc a'));
-      if (!links.length) return;
-      var byId = {};
-      links.forEach(function (a) {
-        byId[a.getAttribute('href').slice(1)] = a;
-      });
-      var sections = document.querySelectorAll('.ef-prose h2[id], .ef-prose h3[id]');
-      if (!sections.length) return;
-      var observer = new IntersectionObserver(
-        function (entries) {
-          entries.forEach(function (e) {
-            if (!e.isIntersecting) return;
-            links.forEach(function (a) {
-              a.removeAttribute('aria-current');
-            });
-            var link = byId[e.target.id];
-            if (link) link.setAttribute('aria-current', 'true');
-          });
-        },
-        { rootMargin: '0px 0px -70% 0px' },
-      );
-      sections.forEach(function (s) {
-        observer.observe(s);
-      });
-    })();
-  </script>
 </Base>
