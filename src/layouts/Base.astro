@@ -108,6 +108,13 @@ const year = new Date().getFullYear();
             {item.label}
           </a>
         ))}
+        <a
+          class="nav-admin"
+          href={withBase('/admin/')}
+          aria-current={isActive('/admin/') ? 'page' : undefined}
+          data-owner-only
+          hidden>控制台</a
+        >
         <button class="ef-btn small" type="button" data-theme-toggle aria-pressed="false">
           切换深浅
         </button>
@@ -207,6 +214,18 @@ const year = new Date().getFullYear();
         document.querySelectorAll('[data-theme-toggle]').forEach((btn) => {
           btn.setAttribute('aria-pressed', String(dark));
         });
+
+        // 只有本机存过 token（也就是站主）才看得到控制台入口
+        let owner = false;
+        try {
+          owner = Boolean(localStorage.getItem('blog.gh.token'));
+        } catch {
+          owner = false;
+        }
+        document.querySelectorAll('[data-owner-only]').forEach((el) => {
+          el.hidden = !owner;
+        });
+
         initDecode();
         initToc();
       };

@@ -79,6 +79,21 @@ main > .pages {
   white-space: nowrap;
 }
 
+/* 站主专属入口：和普通导航用一条细线隔开 */
+.nav-admin {
+  margin-left: 0.35rem;
+  border-left: 1px solid var(--ef-rule);
+  padding-left: 0.9rem !important;
+  color: var(--ef-ink) !important;
+  font-weight: 600;
+}
+
+.nav-admin::before {
+  content: '// ';
+  color: var(--ef-ink-2);
+  font-weight: 400;
+}
+
 .site-nav {
   display: flex;
   flex-wrap: wrap;

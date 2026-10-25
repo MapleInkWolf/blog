@@ -120,10 +120,8 @@ function parsePost(text) {
   return { data, body: body.replace(/^\n+/, '') };
 }
 
-const quote = (value) => {
-  const text = String(value ?? '');
-  return /[:#]|^\s|\s$/.test(text) ? JSON.stringify(text) : text;
-};
+// 一律加引号：纯数字（如标题写 222）不加引号会被 YAML 当成 number，构建直接挂
+const quote = (value) => JSON.stringify(String(value ?? ''));
 
 function serializePost(data, body) {
   return [
@@ -131,7 +129,7 @@ function serializePost(data, body) {
     `title: ${quote(data.title)}`,
     `description: ${quote(data.description)}`,
     `date: ${data.date}`,
-    `tags: [${data.tags.join(', ')}]`,
+    `tags: [${data.tags.map(quote).join(', ')}]`,
     `draft: ${data.draft}`,
     '---',
     '',
@@ -312,9 +310,11 @@ async function savePost(event) {
   $('save').setAttribute('aria-busy', 'true');
   msg($('editor-msg'), '正在提交…');
 
+  let committed = false;
+
   try {
     const payload = {
-      message: `${state.editing ? 'post' : 'post'}: ${data.title || slug}`,
+      message: `post: ${data.title || slug}`,
       content: encodeB64(serializePost(data, body)),
       branch: BRANCH,
     };
@@ -327,16 +327,27 @@ async function savePost(event) {
       body: JSON.stringify(payload),
     });
 
+    committed = true;
     msg($('editor-msg'), '已提交，等 GitHub Actions 跑完（约一分钟）就上线。');
     $('editor-state').textContent = '已提交';
+    $('f-slug').readOnly = true;
+    $('f-slug').value = slug;
     state.editing = { path, sha: null };
     $('delete').hidden = false;
-    await sleep(1200); // 等 GitHub 的读取缓存跟上
-    await loadPosts();
   } catch (error) {
-    msg($('editor-msg'), `提交失败：${error.message}`, true);
+    const text =
+      error.status === 422
+        ? `这个名字已经有文件了（${slug}.md）。换个 slug，或者去列表里点「编辑」改那一篇。`
+        : `提交失败：${error.message}`;
+    msg($('editor-msg'), text, true);
   } finally {
     $('save').removeAttribute('aria-busy');
+  }
+
+  // 刷新列表单独 try：提交已经成功的话，绝不能因为刷新失败报“提交失败”
+  if (committed) {
+    await sleep(1200);
+    await loadPosts().catch(() => {});
   }
 }
 
