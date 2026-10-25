@@ -58,6 +58,21 @@ const first = tracks[0];
             <button type="button" class="pbtn" data-player="next" aria-label="下一首">
               <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M18 5h2v14h-2zM4 5v14l11-7z" fill="currentColor" /></svg>
             </button>
+
+            <label class="vol">
+              <span class="ef-field">音量</span>
+              <input
+                type="range"
+                min="0"
+                max="100"
+                step="1"
+                value="30"
+                data-volume
+                aria-label="音量"
+              />
+              <span class="ef-field vol__val" data-volume-value>30%</span>
+            </label>
+
             <a
               class="ef-btn small music-open"
               data-player-link

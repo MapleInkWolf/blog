@@ -27,12 +27,46 @@ function boot() {
 
   const audio = new Audio();
   audio.preload = 'metadata';
-  audio.volume = 0.3; // 默认音量 30%
+
+  // 音量：默认 30%，改过就记在 localStorage，全站共用
+  const VOL_KEY = 'blog.vol';
+  const readVolume = () => {
+    try {
+      const raw = localStorage.getItem(VOL_KEY);
+      if (raw === null) return 0.3; // 没存过（注意 Number(null) 是 0，不能直接用）
+      const saved = Number(raw);
+      return Number.isFinite(saved) && saved >= 0 && saved <= 1 ? saved : 0.3;
+    } catch {
+      return 0.3;
+    }
+  };
+  audio.volume = readVolume();
 
   const state = { i: 0, playing: false, started: false };
 
   const all = (sel) => Array.from(document.querySelectorAll(sel));
   const track = () => tracks[state.i] || {};
+
+  function drawVolume() {
+    const pct = Math.round(audio.volume * 100);
+    all('[data-volume]').forEach((el) => {
+      if (el !== document.activeElement) el.value = String(pct);
+      el.style.setProperty('--p', `${pct}%`);
+    });
+    all('[data-volume-value]').forEach((el) => {
+      el.textContent = `${pct}%`;
+    });
+  }
+
+  function setVolume(value) {
+    audio.volume = Math.min(1, Math.max(0, value));
+    try {
+      localStorage.setItem(VOL_KEY, String(audio.volume));
+    } catch {
+      /* 无痕模式 */
+    }
+    drawVolume();
+  }
 
   function paint() {
     const t = track();
@@ -60,6 +94,7 @@ function boot() {
     all('[data-player-link]').forEach((el) => {
       el.setAttribute('href', `https://music.163.com/song?id=${t.id}`);
     });
+    drawVolume();
     drawProgress();
   }
 
@@ -201,6 +236,13 @@ function boot() {
     else if (action === 'prev') prev();
   });
 
+  // 音量滑块：拖动即生效并记住
+  document.addEventListener('input', (e) => {
+    const el = e.target;
+    if (!(el instanceof HTMLInputElement) || !el.matches('[data-volume]')) return;
+    setVolume(Number(el.value) / 100);
+  });
+
   document.addEventListener('astro:page-load', () => {
     paint();
     setError('');
@@ -217,7 +259,7 @@ function boot() {
     /* 无痕模式 */
   }
 
-  const api = { load, toggle, next, prev, paint, audio, state };
+  const api = { load, toggle, next, prev, paint, audio, state, setVolume };
   window.__player = api;
   paint();
 

@@ -1001,6 +1001,87 @@ html[data-theme='dark'] .hero .ef-frame .shot {
   margin-top: 1rem;
 }
 
+/* 音量滑块：细轨 + 方形滑块，填充用 trace 色（浅色是墨、深色是黄） */
+.vol {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.55rem;
+  margin-left: 0.75rem;
+  color: var(--ef-ink-2);
+}
+
+.vol input[type='range'] {
+  --p: 30%;
+  -webkit-appearance: none;
+  appearance: none;
+  width: 108px;
+  height: 18px;
+  margin: 0;
+  padding: 0;
+  background: transparent;
+  cursor: pointer;
+}
+
+.vol input[type='range']::-webkit-slider-runnable-track {
+  height: 4px;
+  background: linear-gradient(
+    to right,
+    var(--ef-trace) var(--p),
+    var(--ef-chip) var(--p)
+  );
+}
+
+.vol input[type='range']::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  appearance: none;
+  width: 10px;
+  height: 16px;
+  margin-top: -6px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ef-ink);
+}
+
+.vol input[type='range']::-moz-range-track {
+  height: 4px;
+  background: var(--ef-chip);
+}
+
+.vol input[type='range']::-moz-range-progress {
+  height: 4px;
+  background: var(--ef-trace);
+}
+
+.vol input[type='range']::-moz-range-thumb {
+  width: 10px;
+  height: 16px;
+  border: 0;
+  border-radius: 0;
+  background: var(--ef-ink);
+}
+
+.vol input[type='range']:focus-visible {
+  outline: 2px solid var(--ef-trace);
+  outline-offset: 3px;
+}
+
+.vol__val {
+  min-width: 2.6em;
+  font-variant-numeric: tabular-nums;
+}
+
+@media (max-width: 719px) {
+  .vol {
+    margin-left: 0;
+    flex: 1 0 100%;
+  }
+
+  .vol input[type='range'] {
+    flex: 1;
+    width: auto;
+  }
+}
+
 /* ---------- 6d. 控制台 ---------- */
 .admin {
   padding: clamp(2rem, 4vw, 3rem) var(--ef-pad) 4rem;
