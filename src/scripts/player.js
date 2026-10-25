@@ -27,6 +27,7 @@ function boot() {
 
   const audio = new Audio();
   audio.preload = 'metadata';
+  audio.volume = 0.3; // 默认音量 30%
 
   const state = { i: 0, playing: false, started: false };
 
@@ -205,7 +206,7 @@ function boot() {
     setError('');
   });
 
-  // 恢复上次的曲目（不自动播放）
+  // 恢复上次听到的曲目，再从这个位置自动播
   try {
     const saved = Number(sessionStorage.getItem('pl-index'));
     if (Number.isInteger(saved) && saved >= 0 && saved < tracks.length) {
@@ -219,6 +220,14 @@ function boot() {
   const api = { load, toggle, next, prev, paint, audio, state };
   window.__player = api;
   paint();
+
+  // 进站先试着自动播放；浏览器不让自动出声时，会静默失败停在暂停状态，
+  // 用户点一下播放键即可（点击本身就是手势，能放）。
+  setTimeout(() => {
+    if (state.started) return;
+    load(state.i, true);
+  }, 260);
+
   return api;
 }
 
